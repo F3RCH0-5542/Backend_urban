@@ -24,10 +24,8 @@ const getImagenProducto = async (id_producto) => {
 
 // ── Helper: enriquecer lista de movimientos con imagen y nombre ──────────
 const enriquecerMovimientos = async (movimientos) => {
-  // Obtener IDs únicos
   const ids = [...new Set(movimientos.map((m) => m.id_producto))];
 
-  // Buscar imagen y nombre de cada producto en paralelo
   const infoMap = {};
   await Promise.all(
     ids.map(async (id) => {
@@ -56,7 +54,6 @@ const enriquecerMovimientos = async (movimientos) => {
 
 // ─────────────────────────────────────────────
 // GET /api/inventario/productos-lista
-// Lista de productos con stock actual e imagen (para el formulario)
 // ─────────────────────────────────────────────
 const obtenerProductosLista = async (req, res) => {
   try {
@@ -66,7 +63,6 @@ const obtenerProductosLista = async (req, res) => {
       order: [["nombre_producto", "ASC"]],
     });
 
-    // Enriquecer con imágenes
     const enriched = await Promise.all(
       productos.map(async (p) => {
         const info = await getImagenProducto(p.id_producto);
@@ -110,16 +106,14 @@ const registrarMovimiento = async (req, res) => {
         .json({ msg: "tipo debe ser 'entrada', 'salida' o 'ajuste'." });
     }
 
-    if (parseInt(cantidad) <= 0) {
+    if (Number.parseInt(cantidad) <= 0) {
       await t.rollback();
       return res
         .status(400)
         .json({ msg: "La cantidad debe ser mayor a 0." });
     }
 
-    const producto = await Producto.findByPk(id_producto, {
-      transaction: t,
-    });
+    const producto = await Producto.findByPk(id_producto, { transaction: t });
     if (!producto) {
       await t.rollback();
       return res.status(404).json({ msg: "Producto no encontrado." });
@@ -129,18 +123,18 @@ const registrarMovimiento = async (req, res) => {
     let nuevoStock;
 
     if (tipo === "entrada") {
-      nuevoStock = stockActual + parseInt(cantidad);
+      nuevoStock = stockActual + Number.parseInt(cantidad);
     } else if (tipo === "salida") {
-      if (stockActual < parseInt(cantidad)) {
+      if (stockActual < Number.parseInt(cantidad)) {
         await t.rollback();
         return res.status(400).json({
           msg: `Stock insuficiente. Disponible: ${stockActual}, solicitado: ${cantidad}`,
         });
       }
-      nuevoStock = stockActual - parseInt(cantidad);
+      nuevoStock = stockActual - Number.parseInt(cantidad);
     } else {
       // ajuste: sobreescribe directamente
-      nuevoStock = parseInt(cantidad);
+      nuevoStock = Number.parseInt(cantidad);
     }
 
     await producto.update({ stock_disponible: nuevoStock }, { transaction: t });
@@ -149,9 +143,9 @@ const registrarMovimiento = async (req, res) => {
       {
         id_producto,
         tipo,
-        cantidad: parseInt(cantidad),
+        cantidad: Number.parseInt(cantidad),
         stock_resultante: nuevoStock,
-        stock_minimo: stock_minimo !== undefined ? parseInt(stock_minimo) : 5,
+        stock_minimo: stock_minimo !== undefined ? Number.parseInt(stock_minimo) : 5,
         motivo: motivo || null,
         id_referencia: id_referencia || null,
         fecha_movimiento: new Date(),
@@ -161,7 +155,6 @@ const registrarMovimiento = async (req, res) => {
 
     await t.commit();
 
-    // Enriquecer respuesta con imagen y nombre
     const info = await getImagenProducto(id_producto);
 
     const alerta =
@@ -210,7 +203,6 @@ const obtenerMovimientos = async (req, res) => {
       order: [["fecha_movimiento", "DESC"]],
     });
 
-    // Enriquecer con imagen y nombre de producto
     const enriched = await enriquecerMovimientos(movimientos);
 
     res.json({ success: true, total: enriched.length, movimientos: enriched });
@@ -284,7 +276,6 @@ const obtenerStockBajo = async (req, res) => {
       (m) => m.stock_resultante <= m.stock_minimo
     );
 
-    // Enriquecer con imagen y nombre
     const enriched = await Promise.all(
       productosStockBajo.map(async (m) => {
         const info = await getImagenProducto(m.id_producto);

@@ -6,7 +6,6 @@ const ESTADOS_VALIDOS = ['pendiente', 'en_proceso', 'aprobada', 'rechazada'];
 const TIPOS_VALIDOS   = ['bordado', 'estampado', 'parche', 'tie-dye', 'otro'];
 const TALLAS_VALIDAS  = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'UNICA'];
 
-// ✅ CORREGIDO: Producto sin atributos específicos para evitar errores de nombre de columna
 const includeCompleto = [
     {
         model: Pedido,
@@ -18,7 +17,7 @@ const includeCompleto = [
     },
     {
         model: Producto,
-        required: false  // LEFT JOIN — no rompe si id_producto es null
+        required: false
     }
 ];
 
@@ -114,8 +113,9 @@ const crearPersonalizacion = async (req, res) => {
                 return res.status(404).json({ msg: "Producto no encontrado." });
         }
 
-        const precioFinal = precio_adicional ? parseFloat(precio_adicional) : 0;
-        if (isNaN(precioFinal) || precioFinal < 0)
+        // ✅ SonarQube fix: Number.parseFloat / Number.isNaN
+        const precioFinal = precio_adicional ? Number.parseFloat(precio_adicional) : 0;
+        if (Number.isNaN(precioFinal) || precioFinal < 0)
             return res.status(400).json({ msg: "precio_adicional debe ser un número positivo." });
 
         const nuevoPedido = await Pedido.create({
@@ -168,9 +168,11 @@ const actualizarPersonalizacion = async (req, res) => {
             return res.status(400).json({ msg: "Estado no válido.", estadosValidos: ESTADOS_VALIDOS });
         if (talla && !TALLAS_VALIDAS.includes(talla.toUpperCase()))
             return res.status(400).json({ msg: "Talla no válida." });
+
         if (precio_adicional !== undefined) {
-            const precio = parseFloat(precio_adicional);
-            if (isNaN(precio) || precio < 0)
+            // ✅ SonarQube fix: Number.parseFloat / Number.isNaN
+            const precio = Number.parseFloat(precio_adicional);
+            if (Number.isNaN(precio) || precio < 0)
                 return res.status(400).json({ msg: "precio_adicional debe ser un número positivo." });
         }
 
@@ -181,13 +183,13 @@ const actualizarPersonalizacion = async (req, res) => {
         if (color_deseado !== undefined)     datosLimpios.color_deseado              = color_deseado?.trim() || null;
         if (talla !== undefined)             datosLimpios.talla                      = talla?.toUpperCase() || null;
         if (estado)                          datosLimpios.estado                     = estado;
-        if (precio_adicional !== undefined)  datosLimpios.precio_adicional           = parseFloat(precio_adicional);
+        if (precio_adicional !== undefined)  datosLimpios.precio_adicional           = Number.parseFloat(precio_adicional);
 
         await personalizacion.update(datosLimpios);
 
         if (precio_adicional !== undefined) {
             await Pedido.update(
-                { total: parseFloat(precio_adicional) },
+                { total: Number.parseFloat(precio_adicional) },
                 { where: { id_pedido: personalizacion.id_pedido } }
             );
         }

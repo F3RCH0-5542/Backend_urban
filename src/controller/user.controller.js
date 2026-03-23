@@ -1,6 +1,6 @@
 // controller/user.controller.js
 const Usuario = require("../models/Usuario");
-const Rol = require("../models/Rol"); // ← IMPORTADO
+const Rol = require("../models/Rol");
 const bcrypt = require("bcrypt");
 
 // ─── READ ───────────────────────────────────────────────────────────────────
@@ -13,7 +13,7 @@ const obtenerUsuarios = async (req, res) => {
         });
         res.json(usuarios);
     } catch (err) {
-        console.error("❌ Error al obtener usuarios:", err);
+        console.error("Error al obtener usuarios:", err);
         res.status(500).json({ msg: "Error al consultar usuarios." });
     }
 };
@@ -24,12 +24,10 @@ const obtenerUsuarioPorId = async (req, res) => {
         const usuario = await Usuario.findByPk(id, {
             attributes: { exclude: ['clave'] }
         });
-        if (!usuario) {
-            return res.status(404).json({ msg: "Usuario no encontrado." });
-        }
+        if (!usuario) return res.status(404).json({ msg: "Usuario no encontrado." });
         res.json({ usuario });
     } catch (err) {
-        console.error("❌ Error al obtener usuario por ID:", err);
+        console.error("Error al obtener usuario por ID:", err);
         res.status(500).json({ msg: "Error interno del servidor." });
     }
 };
@@ -38,17 +36,21 @@ const obtenerUsuariosConRol = async (req, res) => {
     try {
         const usuarios = await Usuario.findAll({
             attributes: { exclude: ['clave'] },
-            include: [{
-                model: Rol,
-                attributes: ['id_rol', 'nombre_rol']
-            }],
+            include: [{ model: Rol, attributes: ['id_rol', 'nombre_rol'] }],
             order: [['id_usuario', 'ASC']]
         });
         res.json(usuarios);
     } catch (err) {
-        console.error("❌ Error al obtener usuarios con rol:", err);
+        console.error("Error al obtener usuarios con rol:", err);
         res.status(500).json({ msg: "Error al consultar usuarios con roles." });
     }
+};
+
+// ─── Helper: excluir clave sin variable no usada ─────────────────────────────
+// ✅ SonarQube fix L74/103/130/155: evitar variable '_' no utilizada
+const sinClave = (usuarioJson) => {
+    const { clave, ...resto } = usuarioJson; // eslint-disable-line no-unused-vars
+    return resto;
 };
 
 // ─── CREATE ─────────────────────────────────────────────────────────────────
@@ -58,9 +60,7 @@ const crearUsuario = async (req, res) => {
         const { nombre, apellido, documento, correo, clave, usuario, id_rol } = req.body;
 
         const existeUsuario = await Usuario.findOne({ where: { correo } });
-        if (existeUsuario) {
-            return res.status(400).json({ msg: "El correo ya está registrado." });
-        }
+        if (existeUsuario) return res.status(400).json({ msg: "El correo ya está registrado." });
 
         const salt = await bcrypt.genSalt(10);
         const claveHasheada = await bcrypt.hash(clave, salt);
@@ -71,10 +71,12 @@ const crearUsuario = async (req, res) => {
             clave: claveHasheada
         });
 
-        const { clave: _, ...usuarioCreado } = nuevoUsuario.toJSON();
-        res.status(201).json({ msg: "Usuario creado exitosamente", usuario: usuarioCreado });
+        res.status(201).json({
+            msg: "Usuario creado exitosamente",
+            usuario: sinClave(nuevoUsuario.toJSON())
+        });
     } catch (err) {
-        console.error("❌ Error al crear usuario:", err);
+        console.error("Error al crear usuario:", err);
         res.status(500).json({ msg: "Error interno del servidor al crear usuario." });
     }
 };
@@ -87,23 +89,22 @@ const actualizarUsuario = async (req, res) => {
         const data = { ...req.body };
 
         const usuario = await Usuario.findByPk(id);
-        if (!usuario) {
-            return res.status(404).json({ msg: "Usuario no encontrado." });
-        }
+        if (!usuario) return res.status(404).json({ msg: "Usuario no encontrado." });
 
         if (data.clave) {
             const salt = await bcrypt.genSalt(10);
             data.clave = await bcrypt.hash(data.clave, salt);
         } else {
-            delete data.clave; // no actualizar clave si no se envía
+            delete data.clave;
         }
 
         await usuario.update(data);
-
-        const { clave: _, ...usuarioActualizado } = usuario.toJSON();
-        res.json({ msg: "Usuario actualizado exitosamente", usuario: usuarioActualizado });
+        res.json({
+            msg: "Usuario actualizado exitosamente",
+            usuario: sinClave(usuario.toJSON())
+        });
     } catch (err) {
-        console.error("❌ Error al actualizar usuario:", err);
+        console.error("Error al actualizar usuario:", err);
         res.status(500).json({ msg: "Error interno del servidor al actualizar usuario." });
     }
 };
@@ -114,9 +115,7 @@ const actualizarUsuarioParcial = async (req, res) => {
         const data = { ...req.body };
 
         const usuario = await Usuario.findByPk(id);
-        if (!usuario) {
-            return res.status(404).json({ msg: "Usuario no encontrado." });
-        }
+        if (!usuario) return res.status(404).json({ msg: "Usuario no encontrado." });
 
         if (data.clave) {
             const salt = await bcrypt.genSalt(10);
@@ -126,36 +125,36 @@ const actualizarUsuarioParcial = async (req, res) => {
         }
 
         await usuario.update(data);
-
-        const { clave: _, ...usuarioActualizado } = usuario.toJSON();
-        res.json({ msg: "Usuario actualizado parcialmente", usuario: usuarioActualizado });
+        res.json({
+            msg: "Usuario actualizado parcialmente",
+            usuario: sinClave(usuario.toJSON())
+        });
     } catch (err) {
-        console.error("❌ Error al actualizar usuario (PATCH):", err);
+        console.error("Error al actualizar usuario (PATCH):", err);
         res.status(500).json({ msg: "Error interno del servidor al actualizar usuario parcialmente." });
     }
 };
 
-// Cambiar estado activo/inactivo
 const toggleEstadoUsuario = async (req, res) => {
     try {
         const { id } = req.params;
         const { activo } = req.body;
 
-        if (parseInt(id) === 72) {
+        // ✅ SonarQube fix L144: Number.parseInt en lugar de parseInt
+        if (Number.parseInt(id, 10) === 72) {
             return res.status(403).json({ msg: "No se puede modificar al Superadmin." });
         }
 
         const usuario = await Usuario.findByPk(id);
-        if (!usuario) {
-            return res.status(404).json({ msg: "Usuario no encontrado." });
-        }
+        if (!usuario) return res.status(404).json({ msg: "Usuario no encontrado." });
 
         await usuario.update({ activo });
-
-        const { clave: _, ...usuarioActualizado } = usuario.toJSON();
-        res.json({ msg: "Estado actualizado", usuario: usuarioActualizado });
+        res.json({
+            msg: "Estado actualizado",
+            usuario: sinClave(usuario.toJSON())
+        });
     } catch (err) {
-        console.error("❌ Error al cambiar estado:", err);
+        console.error("Error al cambiar estado:", err);
         res.status(500).json({ msg: "Error interno del servidor." });
     }
 };
@@ -166,19 +165,18 @@ const eliminarUsuario = async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (parseInt(id) === 72) {
+        // ✅ SonarQube fix: Number.parseInt en lugar de parseInt
+        if (Number.parseInt(id, 10) === 72) {
             return res.status(403).json({ msg: "No se puede eliminar al Superadmin." });
         }
 
         const usuario = await Usuario.findByPk(id);
-        if (!usuario) {
-            return res.status(404).json({ msg: "Usuario no encontrado." });
-        }
+        if (!usuario) return res.status(404).json({ msg: "Usuario no encontrado." });
 
         await usuario.destroy();
         res.json({ msg: `Usuario con ID ${id} eliminado exitosamente.` });
     } catch (err) {
-        console.error("❌ Error al eliminar usuario:", err);
+        console.error("Error al eliminar usuario:", err);
         res.status(500).json({ msg: "Error interno del servidor al eliminar usuario.", error: err.message });
     }
 };

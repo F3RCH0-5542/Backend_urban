@@ -130,7 +130,7 @@ const eliminarRol = async (req, res) => {
         const { id } = req.params;
 
         // Proteger roles críticos del sistema
-        if (parseInt(id) === 1 || parseInt(id) === 2 ) {
+        if (Number(id) === 1 || Number(id) === 2) {
             return res.status(403).json({ 
                 msg: "No se pueden eliminar los roles básicos del sistema (superadmin, administrador, usuario, cliente)." 
             });

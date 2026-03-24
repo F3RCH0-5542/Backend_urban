@@ -51,7 +51,7 @@ const propietarioOSuperAdmin = (req, res, next) => {
   const userId = req.userId;
   const rolId = req.rolId;
 
-  const targetId = parseInt(id || id_usuario);
+  const targetId = Number(id || id_usuario);
 
   if (userId === 72 || rolId === 1 || targetId === userId) {
     return next();
@@ -65,7 +65,7 @@ const propietarioOSuperAdmin = (req, res, next) => {
 module.exports = { 
   validarToken, 
   soloSuperAdmin, 
-  soloAdmin,          // ← NUEVO
+  soloAdmin,
   usuarioAutenticado, 
   propietarioOSuperAdmin 
 };

@@ -98,7 +98,7 @@ const crearRegistro = async (req, res) => {
         const contraseñaHasheada = await bcrypt.hash(contraseña, salt);
 
         const nuevoRegistro = await Registro.create({
-            id_usuario: parseInt(id_usuario),
+            id_usuario: Number(id_usuario),
             nombre: nombre.trim(),
             contraseña: contraseñaHasheada,
             rol: rol.trim()
@@ -150,7 +150,7 @@ const actualizarRegistro = async (req, res) => {
         }
 
         const datosLimpios = {};
-        if (id_usuario) datosLimpios.id_usuario = parseInt(id_usuario);
+        if (id_usuario) datosLimpios.id_usuario = Number(id_usuario);
         if (nombre) datosLimpios.nombre = nombre.trim();
         if (rol) datosLimpios.rol = rol.trim();
         
@@ -209,7 +209,7 @@ const actualizarRegistroParcial = async (req, res) => {
 
         // Limpiar y preparar datos
         const datosLimpios = {};
-        if (data.id_usuario) datosLimpios.id_usuario = parseInt(data.id_usuario);
+        if (data.id_usuario) datosLimpios.id_usuario = Number(data.id_usuario);
         if (data.nombre) datosLimpios.nombre = data.nombre.trim();
         if (data.rol) datosLimpios.rol = data.rol.trim();
         

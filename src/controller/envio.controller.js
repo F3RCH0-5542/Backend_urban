@@ -132,7 +132,7 @@ const crearEnvio = async (req, res) => {
         }
 
         const nuevoEnvio = await Envio.create({
-            id_pedido: parseInt(id_pedido),
+            id_pedido: Number(id_pedido),
             direccion: direccion.trim(),
             ciudad: ciudad || null,                     // ✅
             telefono: telefono || null,                 // ✅
@@ -186,7 +186,7 @@ const actualizarEnvio = async (req, res) => {
         }
 
         const datosLimpios = {};
-        if (id_pedido) datosLimpios.id_pedido = parseInt(id_pedido);
+        if (id_pedido) datosLimpios.id_pedido = Number(id_pedido);
         if (direccion) datosLimpios.direccion = direccion.trim();
         if (ciudad !== undefined) datosLimpios.ciudad = ciudad;         // ✅
         if (telefono !== undefined) datosLimpios.telefono = telefono;   // ✅
@@ -240,7 +240,7 @@ const actualizarEnvioParcial = async (req, res) => {
         }
 
         const datosLimpios = {};
-        if (data.id_pedido) datosLimpios.id_pedido = parseInt(data.id_pedido);
+        if (data.id_pedido) datosLimpios.id_pedido = Number(data.id_pedido);
         if (data.direccion) datosLimpios.direccion = data.direccion.trim();
         if (data.ciudad !== undefined) datosLimpios.ciudad = data.ciudad;       // ✅
         if (data.telefono !== undefined) datosLimpios.telefono = data.telefono; // ✅
@@ -322,7 +322,7 @@ const obtenerEstadisticasEnvios = async (req, res) => {
     try {
         const estadisticas = await Envio.findAll({
             attributes: [
-                'estado_envio',   // ✅ agrupado también por estado
+                'estado_envio',
                 [sequelize.fn('COUNT', sequelize.col('id_envio')), 'total_envios'],
                 [sequelize.fn('DATE', sequelize.col('fecha')), 'fecha']
             ],
@@ -342,7 +342,7 @@ module.exports = {
     obtenerEnvios,
     obtenerEnvioPorId,
     obtenerEnviosPorPedido,
-    obtenerEnviosPorEstado,     // ✅ nuevo
+    obtenerEnviosPorEstado,
     crearEnvio,
     actualizarEnvio,
     actualizarEnvioParcial,

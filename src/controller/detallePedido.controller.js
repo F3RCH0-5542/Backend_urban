@@ -94,37 +94,64 @@ const crearDetallePedido = async (req, res) => {
     }
 };
 
+// ── Helpers para actualizarDetallePedido ─────────────────────────────────────
+
+// FIX L125/L126: condiciones positivas en lugar de negadas
+const esCantidadValida = (cantidad) =>
+    cantidad !== undefined && !Number.isNaN(Number(cantidad)) && Number(cantidad) > 0;
+
+const esPrecioValido = (precio) =>
+    precio !== undefined && !Number.isNaN(Number(precio)) && Number(precio) >= 0;
+
+// FIX L98: extraer la construcción de datos limpios para reducir complejidad cognitiva
+const construirDatosActualizacion = (campos, detalleActual) => {
+    const {
+        id_pedido, id_producto, nombre_producto, imagen,
+        cantidad, precio_unitario, id_personalizacion
+    } = campos;
+
+    const datos = {};
+
+    if (id_pedido !== undefined)          datos.id_pedido          = Number(id_pedido);
+    if (id_producto !== undefined)        datos.id_producto        = Number(id_producto);
+    if (nombre_producto !== undefined)    datos.nombre_producto    = nombre_producto;
+    if (imagen !== undefined)             datos.imagen             = imagen;
+    if (cantidad !== undefined)           datos.cantidad           = Number(cantidad);
+    if (precio_unitario !== undefined)    datos.precio_unitario    = Number(precio_unitario);
+    if (id_personalizacion !== undefined) {
+        datos.id_personalizacion = id_personalizacion ? Number(id_personalizacion) : null;
+    }
+
+    const cantidadFinal     = cantidad       !== undefined ? Number(cantidad)       : detalleActual.cantidad;
+    const precioFinal       = precio_unitario !== undefined ? Number(precio_unitario) : detalleActual.precio_unitario;
+    datos.subtotal          = cantidadFinal * precioFinal;
+
+    return datos;
+};
+
 // U: UPDATE - Actualizar detalle de pedido
 const actualizarDetallePedido = async (req, res) => {
     try {
         const { id } = req.params;
-        const { id_pedido, id_producto, nombre_producto, imagen, cantidad, precio_unitario, id_personalizacion } = req.body;
+        const { cantidad, precio_unitario } = req.body;
 
         const detalle = await DetallePedido.findByPk(id);
         if (!detalle) {
             return res.status(404).json({ msg: "Detalle de pedido no encontrado." });
         }
 
-        if (cantidad !== undefined && (Number.isNaN(Number(cantidad)) || Number(cantidad) <= 0)) {
+        // FIX L125: condición positiva — validar solo si el campo viene en el body
+        if (cantidad !== undefined && !esCantidadValida(cantidad)) {
             return res.status(400).json({ msg: "La cantidad debe ser mayor a 0." });
         }
 
-        if (precio_unitario !== undefined && (Number.isNaN(Number(precio_unitario)) || Number(precio_unitario) < 0)) {
+        // FIX L126: condición positiva — validar solo si el campo viene en el body
+        if (precio_unitario !== undefined && !esPrecioValido(precio_unitario)) {
             return res.status(400).json({ msg: "El precio unitario debe ser un número positivo." });
         }
 
-        const datosLimpios = {};
-        if (id_pedido !== undefined)          datosLimpios.id_pedido          = Number(id_pedido);
-        if (id_producto !== undefined)        datosLimpios.id_producto        = Number(id_producto);
-        if (nombre_producto !== undefined)    datosLimpios.nombre_producto    = nombre_producto;
-        if (imagen !== undefined)             datosLimpios.imagen             = imagen;
-        if (cantidad !== undefined)           datosLimpios.cantidad           = Number(cantidad);
-        if (precio_unitario !== undefined)    datosLimpios.precio_unitario    = Number(precio_unitario);
-        if (id_personalizacion !== undefined) datosLimpios.id_personalizacion = id_personalizacion ? Number(id_personalizacion) : null;
-
-        const cantidadFinal = cantidad !== undefined ? Number(cantidad) : detalle.cantidad;
-        const precioFinal   = precio_unitario !== undefined ? Number(precio_unitario) : detalle.precio_unitario;
-        datosLimpios.subtotal = cantidadFinal * precioFinal;
+        // FIX L98: lógica de construcción extraída a helper para bajar complejidad cognitiva
+        const datosLimpios = construirDatosActualizacion(req.body, detalle);
 
         await detalle.update(datosLimpios);
         res.json({ msg: "Detalle de pedido actualizado exitosamente", detalle });

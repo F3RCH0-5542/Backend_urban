@@ -1,0 +1,103 @@
+/* Fondo y texto general */
+body {
+  background-color: #111; /* Fondo oscuro general */
+  color: #f8f9fa;         /* Texto claro */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #000 !important; /* Fondo negro */
+}
+
+.navbar .nav-link,
+.navbar .navbar-brand,
+.navbar .dropdown-item {
+  color: #f8f9fa !important; /* Texto blanco */
+}
+
+.navbar .nav-link:hover,
+.navbar .dropdown-item:hover {
+  color: #0d6efd !important; /* Azul Bootstrap en hover */
+}
+
+.navbar .dropdown-menu {
+  background-color: #212529; /* Menú desplegable oscuro */
+  border: 1px solid #444;
+}
+
+.navbar .dropdown-item {
+  color: #f8f9fa;
+}
+
+.navbar .dropdown-item:hover {
+  background-color: #343a40;
+  color: #ffffff;
+}
+
+/* Inputs y Selects */
+.form-control,
+.form-select {
+  background-color: #212529; /* Fondo oscuro */
+  color: #f8f9fa;            /* Texto blanco */
+  border: 1px solid #555;    /* Bordes gris oscuro */
+}
+
+.form-control::placeholder {
+  color: #adb5bd;            /* Placeholder gris claro */
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #0d6efd; /* Azul al foco */
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Botones */
+.btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.btn-outline-light {
+  color: #f8f9fa;
+  border-color: #f8f9fa;
+}
+
+.btn-outline-light:hover {
+  background-color: #f8f9fa;
+  color: #000;
+}
+
+/* Formularios y Cards */
+.formulario-personalizado {
+  background-color: rgba(33, 37, 41, 0.85); /* Semi-transparente */
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+}
+
+/* Footer */
+footer {
+  background-color: #000; /* Fondo negro */
+  color: #f8f9fa;         /* Texto blanco */
+}
+
+footer a {
+  color: #f8f9fa;
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: #0d6efd;
+}
+
+footer hr {
+  border-top: 1px solid #444;
+}

@@ -1,0 +1,81 @@
+body {
+  background-color: #050505;
+  color: #000000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar .nav-link,
+.navbar .navbar-brand,
+.navbar .dropdown-item {
+  color: #ffffff !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .dropdown-item:hover {
+  color: #fff9f9 !important;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+.card-header {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.form-control,
+.form-select {
+  background-color: #1c1c1c;
+  color: #fff;
+  border: 1px solid #646464;
+}
+
+.form-control::placeholder {
+  color: #aaa;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #feffff;
+  box-shadow: 0 0 0 0.2rem rgba(250, 252, 255, 0.25);
+}
+
+.accordion-button {
+  background-color: #1a1a1a;
+  color: #f8f9fa;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: #ffffff;
+  color: white;
+}
+
+.accordion-body {
+  background-color: #1c1c1c;
+  color: #ddd;
+}
+
+footer {
+  border-top: 2px solid #0d6efd;
+}
+.card-header {
+  background-color: #fff; /* Fondo blanco */
+  color: #000;            /* Texto negro */
+  font-weight: bold;
+  border-bottom: 1px solid #000;
+}
+.dropdown-menu {
+  background-color: #000 !important; /* Fondo negro */
+  color: #fff !important;            /* Texto blanco */
+  border: 1px solid #333;            /* Borde para contraste */
+}
+
+.dropdown-menu .dropdown-item {
+  color: #fff !important; /* Texto blanco en los ítems */
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background-color: #333 !important; /* Fondo gris oscuro al pasar el mouse */
+  color: #fff !important;            /* Texto blanco */
+}

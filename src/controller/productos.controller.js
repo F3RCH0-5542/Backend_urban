@@ -87,7 +87,6 @@ const actualizarProducto = async (req, res) => {
         const producto = await Producto.findByPk(id);
         if (!producto) return res.status(404).json({ success: false, message: "Producto no encontrado" });
 
-        // ✅ SonarQube fix: condición positiva en lugar de negada
         if (precio_base !== undefined && precio_base <= 0) {
             return res.status(400).json({ success: false, message: "El precio debe ser mayor a 0" });
         }
@@ -114,7 +113,6 @@ const actualizarProductoParcial = async (req, res) => {
         const producto = await Producto.findByPk(id);
         if (!producto) return res.status(404).json({ success: false, message: "Producto no encontrado" });
 
-        // ✅ SonarQube fix L180-184: reescribir condiciones negadas como positivas
         const { precio_base } = req.body;
         if (precio_base !== undefined && precio_base <= 0) {
             return res.status(400).json({ success: false, message: "El precio debe ser mayor a 0" });

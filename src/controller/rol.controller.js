@@ -1,4 +1,5 @@
 const Rol = require("../models/Rol");
+const { Usuario } = require("../models");
 const { Op } = require("sequelize");
 
 // R: READ - Obtener todos los roles
@@ -34,19 +35,14 @@ const crearRol = async (req, res) => {
     try {
         const { nombre_rol, descripcion } = req.body;
         
-        // Validar que se envió el nombre_rol
         if (!nombre_rol || nombre_rol.trim() === '') {
             return res.status(400).json({ msg: "El nombre_rol es requerido." });
         }
 
-        // Normalizar el nombre (quitar espacios extra)
         const nombreLimpio = nombre_rol.trim();
         
-        // Verificar si ya existe un rol con ese nombre (compatible con MariaDB)
         const existeRol = await Rol.findOne({ 
-            where: {
-                nombre_rol: nombreLimpio
-            }
+            where: { nombre_rol: nombreLimpio }
         });
         
         if (existeRol) {
@@ -56,7 +52,6 @@ const crearRol = async (req, res) => {
             });
         }
 
-        // Crear el rol con el nombre limpio
         const nuevoRol = await Rol.create({ 
             nombre_rol: nombreLimpio, 
             descripcion: descripcion ? descripcion.trim() : null
@@ -83,16 +78,13 @@ const actualizarRol = async (req, res) => {
             return res.status(404).json({ msg: "Rol no encontrado." });
         }
 
-        // Si se va a cambiar el nombre, verificar que no exista otro con ese nombre
         if (nombre_rol && nombre_rol.trim() !== '') {
             const nombreLimpio = nombre_rol.trim();
             
             const existeOtroRol = await Rol.findOne({ 
                 where: {
                     nombre_rol: nombreLimpio,
-                    id_rol: {
-                        [Op.ne]: id // Excluir el rol actual
-                    }
+                    id_rol: { [Op.ne]: id }
                 }
             });
             
@@ -104,7 +96,6 @@ const actualizarRol = async (req, res) => {
             }
         }
 
-        // Actualizar con datos limpios
         const datosLimpios = {};
         if (nombre_rol && nombre_rol.trim() !== '') {
             datosLimpios.nombre_rol = nombre_rol.trim();
@@ -129,7 +120,6 @@ const eliminarRol = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Proteger roles críticos del sistema
         if (Number(id) === 1 || Number(id) === 2) {
             return res.status(403).json({ 
                 msg: "No se pueden eliminar los roles básicos del sistema (superadmin, administrador, usuario, cliente)." 
@@ -141,13 +131,12 @@ const eliminarRol = async (req, res) => {
             return res.status(404).json({ msg: "Rol no encontrado." });
         }
 
-        // TODO: Verificar que no hay usuarios asignados a este rol
-        // const usuariosConEsteRol = await Usuario.findOne({ where: { id_rol: id } });
-        // if (usuariosConEsteRol) {
-        //     return res.status(400).json({ 
-        //         msg: "No se puede eliminar el rol porque hay usuarios asignados a él." 
-        //     });
-        // }
+        const usuariosConEsteRol = await Usuario.findOne({ where: { id_rol: id } });
+        if (usuariosConEsteRol) {
+            return res.status(400).json({ 
+                msg: "No se puede eliminar el rol porque hay usuarios asignados a él." 
+            });
+        }
 
         await rol.destroy();
         res.json({ msg: `Rol "${rol.nombre_rol}" eliminado exitosamente.` });

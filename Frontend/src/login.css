@@ -1,0 +1,174 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Contenedor principal */
+html, body {
+  height: 100%;
+}
+
+.login-wrapper {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0d0d0d; /* Fondo oscuro elegante */
+}
+
+/* Caja */
+.box {
+  position: relative;
+  width: 380px;
+  background: #1c1c1c;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+}
+
+/* Animaciones borde */
+.box::before,
+.box::after,
+.borderline::before,
+.borderline::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 380px;
+  height: 420px;
+  transform-origin: bottom right;
+  animation: animate 6s linear infinite;
+}
+
+.box::before {
+  background: linear-gradient(0deg, transparent, transparent, #011b1d, #45f3ff, #45f3ff);
+}
+.box::after {
+  background: linear-gradient(0deg, transparent, transparent, #45f3ff, #45f3ff, #45f3ff);
+  animation-delay: -3s;
+}
+.borderline::before {
+  background: linear-gradient(0deg, transparent, transparent, #ff2770, #ff2770, #ff2770);
+  animation-delay: -1.5s;
+}
+.borderline::after {
+  background: linear-gradient(0deg, transparent, transparent, #ff2770, #ff2770, #ff2770);
+  animation-delay: -4.5s;
+}
+
+@keyframes animate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Formulario */
+.box form {
+  position: relative;
+  inset: 4px;
+  background: #222;
+  padding: 40px 30px;
+  border-radius: 4px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.box form h2 {
+  color: #fff;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.box form .inputbox {
+  position: relative;
+  width: 100%;
+  margin-top: 25px;
+}
+
+.box form .inputbox input {
+  width: 100%;
+  padding: 15px 10px 10px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 1em;
+  transition: 0.5s;
+  z-index: 10;
+}
+
+.box form .inputbox span {
+  position: absolute;
+  left: 0;
+  padding: 15px 0px 10px;
+  pointer-events: none;
+  color: #8f8f8f;
+  font-size: 1em;
+  transition: 0.5s;
+}
+
+.box form .inputbox input:valid ~ span,
+.box form .inputbox input:focus ~ span {
+  color: #9eb6b8;
+  font-size: 0.75em;
+  transform: translateY(-24px);
+}
+
+
+
+.box form .inputbox input:valid ~ i,
+.box form .inputbox input:focus ~ i {
+  height: 40px;
+}
+
+/* Links */
+.box form .links {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.box form .links a {
+  font-size: 0.85em;
+  color: #8f8f8f;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.box form .links a:hover {
+  color: #fff;
+}
+
+/* Botón */
+.box form input[type="submit"] {
+  border: none;
+  outline: none;
+  padding: 12px 20px;
+  background: #45f3ff;
+  color: #111;
+  cursor: pointer;
+  font-size: 1em;
+  border-radius: 6px;
+  font-weight: 600;
+  width: 100%;
+  margin-top: 25px;
+  transition: 0.3s;
+}
+
+.box form input[type="submit"]:hover {
+  background: #656b6d;
+  color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 420px) {
+  .box {
+    width: 90%;
+  }
+}

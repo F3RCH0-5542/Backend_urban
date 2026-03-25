@@ -1,30 +1,31 @@
-import React, { useEffect, useState } from "react";
+import api from "./api";
 
-function Usuarios() {
-  const [usuarios, setUsuarios] = useState([]);
+export const getUsuarios = () =>
+  api.get("/usuarios").then((r) => r.data);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getUsuarios(); // servicio protegido
-        setUsuarios(data);
-      } catch (err) {
-        console.error("Error cargando usuarios", err);
-      }
-    };
-    fetchData();
-  }, []);
+export const getUsuarioPorId = (id) =>
+  api.get(`/usuarios/${id}`).then((r) => r.data);
 
-  return (
-    <div>
-      <h2>Usuarios</h2>
-      <ul>
-        {usuarios.map((u) => (
-          <li key={u.id_usuario}>{u.nombre} - {u.correo}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+export const crearUsuario = (datos) =>
+  api.post("/usuarios", datos).then((r) => r.data);
 
-export default Usuarios;
+export const actualizarUsuario = (id, datos) =>
+  api.put(`/usuarios/${id}`, datos).then((r) => r.data);
+
+export const actualizarUsuarioParcial = (id, datos) =>
+  api.patch(`/usuarios/${id}`, datos).then((r) => r.data);
+
+export const toggleEstadoUsuario = (id) =>
+  api.patch(`/usuarios/${id}/status`).then((r) => r.data);
+
+export const eliminarUsuario = (id) =>
+  api.delete(`/usuarios/${id}`).then((r) => r.data);
+
+export const getPerfil = () =>
+  api.get("/usuarios/perfil").then((r) => r.data);
+
+export const actualizarPerfil = (datos) =>
+  api.put("/usuarios/perfil", datos).then((r) => r.data);
+
+export const cambiarContrasena = (clave_actual, clave_nueva) =>
+  api.put("/usuarios/cambiar-contrasena", { clave_actual, clave_nueva }).then((r) => r.data);

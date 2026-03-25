@@ -9,18 +9,20 @@ const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(morgan("dev"));
 
+// Rutas base
 app.get("/", (req, res) => {
-    res.status(200).json({ ok: true, msg: "Servidor activo" });
+  res.status(200).json({ ok: true, msg: "Servidor activo" });
 });
 
 app.get("/api", (req, res) => {
-    res.status(200).json({ ok: true, msg: "API URBAN_10 funcionando correctamente" });
+  res.status(200).json({ ok: true, msg: "API URBAN_10 funcionando correctamente" });
 });
 
+// Modelos
 const Rol             = require("./models/Rol");
 const Usuario         = require("./models/Usuario");
 const Producto        = require("./models/Producto");
@@ -33,33 +35,47 @@ const Envio           = require("./models/Envio");
 const Inventario      = require("./models/inventario");
 const Pqrs            = require("./models/Pqrs");
 
+// Relaciones
 Usuario.belongsTo(Rol, { foreignKey: "id_rol" });
 Rol.hasMany(Usuario, { foreignKey: "id_rol" });
+
 Pedido.belongsTo(Usuario, { foreignKey: "id_usuario" });
 Usuario.hasMany(Pedido, { foreignKey: "id_usuario" });
+
 DetallePedido.belongsTo(Pedido, { foreignKey: "id_pedido" });
 Pedido.hasMany(DetallePedido, { foreignKey: "id_pedido" });
+
 DetallePedido.belongsTo(Producto, { foreignKey: "id_producto" });
 Producto.hasMany(DetallePedido, { foreignKey: "id_producto" });
+
 DetallePedido.belongsTo(Personalizacion, { foreignKey: "id_personalizacion" });
 Personalizacion.hasMany(DetallePedido, { foreignKey: "id_personalizacion" });
+
 Personalizacion.belongsTo(Pedido, { foreignKey: "id_pedido" });
 Pedido.hasMany(Personalizacion, { foreignKey: "id_pedido" });
+
 Personalizacion.belongsTo(Producto, { foreignKey: "id_producto" });
 Producto.hasMany(Personalizacion, { foreignKey: "id_producto" });
+
 Pago.belongsTo(Pedido, { foreignKey: "id_pedido" });
 Pedido.hasOne(Pago, { foreignKey: "id_pedido" });
+
 Envio.belongsTo(Pedido, { foreignKey: "id_pedido" });
 Pedido.hasOne(Envio, { foreignKey: "id_pedido" });
+
 Venta.belongsTo(Pedido, { foreignKey: "id_pedido" });
 Pedido.hasOne(Venta, { foreignKey: "id_pedido" });
+
 Venta.belongsTo(Usuario, { foreignKey: "id_usuario" });
 Usuario.hasMany(Venta, { foreignKey: "id_usuario" });
+
 Inventario.belongsTo(Producto, { foreignKey: "id_producto" });
 Producto.hasOne(Inventario, { foreignKey: "id_producto" });
+
 Pqrs.belongsTo(Usuario, { foreignKey: "id_usuario" });
 Usuario.hasMany(Pqrs, { foreignKey: "id_usuario" });
 
+// Rutas API
 app.use("/api/auth",              require("./routes/auth.routes"));
 app.use("/api/usuarios",          require("./routes/user.routes"));
 app.use("/api/roles",             require("./routes/rol.routes"));
@@ -73,14 +89,20 @@ app.use("/api/envios",            require("./routes/envio.routes"));
 app.use("/api/pqrs",              require("./routes/pqrs.routes"));
 app.use("/api/detalle-pedidos",   require("./routes/detallePedido.routes"));
 
-try {
+// ✅ CORREGIDO: await dentro de función async
+const startServer = async () => {
+  try {
     await sequelize.authenticate();
-    console.log("Base de datos conectada");
+    console.log("✅ Base de datos conectada");
     await sequelize.sync();
-    console.log("Modelos sincronizados");
+    console.log("✅ Modelos sincronizados");
     app.listen(PORT, () => {
-        console.log("Servidor corriendo en http://localhost:" + PORT);
+      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     });
-} catch (error) {
-    console.error("Error al iniciar el servidor:", error);
-}
+  } catch (error) {
+    console.error("❌ Error al iniciar el servidor:", error);
+    process.exit(1);
+  }
+};
+
+startServer();

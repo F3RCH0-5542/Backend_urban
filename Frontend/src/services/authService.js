@@ -1,61 +1,53 @@
-// src/services/AuthService.js
-import axios from 'axios';
+import api from "./api";
 
-const API_URL = 'http://localhost:8080/api'; // Ajusta tu URL
-
-export const login = async (correo, contrasena) => {
+// 🔑 LOGIN
+export const login = async (correo, clave) => {
   try {
-    const response = await axios.post(`${API_URL}/usuarios/login`, {
-      correo,
-      contrasena
-    });
+    const response = await api.post("/auth/login", { correo, clave });
 
     if (response.data.token) {
-      // Guardar token
-      localStorage.setItem('token', response.data.token);
-      
-      // Guardar rol del usuario
-      const userRole = response.data.rol || response.data.usuario?.rol || 'usuario';
-      localStorage.setItem('userRole', userRole);
-      
-      // Guardar datos del usuario (opcional)
-      localStorage.setItem('userData', JSON.stringify(response.data.usuario));
+      localStorage.setItem("token", response.data.token);
+
+      const userRole = response.data.rol || response.data.usuario?.rol || "usuario";
+      localStorage.setItem("userRole", userRole);
+
+      localStorage.setItem("userData", JSON.stringify(response.data.usuario));
     }
 
     return response.data;
   } catch (error) {
-    throw error.response?.data || { msg: 'Error al iniciar sesión' };
+    throw error.response?.data || { msg: "Error al iniciar sesión" };
   }
 };
 
+// 📝 REGISTRO
 export const register = async (userData) => {
   try {
-    const response = await axios.post(`${API_URL}/usuarios/registro`, userData);
+    const response = await api.post("/auth/signup", userData);
     return response.data;
   } catch (error) {
-    throw error.response?.data || { msg: 'Error al registrarse' };
+    throw error.response?.data || { msg: "Error al registrarse" };
   }
 };
 
+// 🚪 LOGOUT
 export const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('userRole');
-  localStorage.removeItem('userData');
+  localStorage.removeItem("token");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("userData");
 };
 
+// 👤 OBTENER USUARIO ACTUAL
 export const getCurrentUser = () => {
-  const userData = localStorage.getItem('userData');
+  const userData = localStorage.getItem("userData");
   return userData ? JSON.parse(userData) : null;
 };
 
+// 🎭 OBTENER ROL
 export const getUserRole = () => {
-  return localStorage.getItem('userRole') || 'usuario';
+  return localStorage.getItem("userRole") || "usuario";
 };
 
-export const isAdmin = () => {
-  return getUserRole() === 'admin';
-};
-
-export const isAuthenticated = () => {
-  return !!localStorage.getItem('token');
-};
+// ✅ VERIFICACIONES
+export const isAdmin = () => getUserRole() === "admin";
+export const isAuthenticated = () => !!localStorage.getItem("token");

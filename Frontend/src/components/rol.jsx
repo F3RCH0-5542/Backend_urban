@@ -264,7 +264,7 @@ const Rol = ({ token: propToken }) => {
       {/* Nav */}
       <nav className="rol-nav">
         <a href="/home" className="rol-logo">URBAN CAPS</a>
-        <a href="/home" className="rol-back">← VOLVER</a>
+        <a href="/Admin" className="rol-back">← VOLVER</a>
       </nav>
 
       <div className="rol-page">

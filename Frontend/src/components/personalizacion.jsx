@@ -369,7 +369,7 @@ export default function PersonalizacionAdmin() {
           <span className="adm-badge-admin">Admin</span>
           <span className="adm-title">Panel de Personalizaciones</span>
         </div>
-        <a href="/admin" className="adm-back">← Panel Admin</a>
+        <a href="/Admin" className="adm-back">← Panel Admin</a>
       </div>
 
       <div className="adm-page">

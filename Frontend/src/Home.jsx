@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 import { jwtDecode } from "jwt-decode";
 
 /* ─── Paleta ─────────────────────────────────────────────────────────────── */
@@ -23,14 +24,14 @@ const MODULES = [
 ];
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
-const fmt$ = v => "$" + Number(v??0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,",") + " COP";
+const fmt$ = v => "$" + Number(v??0).toFixed(0).replaceAll(/\B(?=(\d{3})+(?!\d))/g,",") + " COP";
 const fmtD = r => { try { const d=new Date(r); return r?`${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`:"—"; } catch { return String(r); }};
 const parseList  = (b,keys) => Array.isArray(b)?b:(keys.find(k=>b[k])&&b[keys.find(k=>b[k])])||[];
 const byEstado   = (items,f) => items.reduce((m,i)=>{ const e=i[f]??"pendiente"; m[e]=(m[e]??0)+1; return m; },{});
-const sumar      = items => items.reduce((s,v)=>s+(parseFloat(v.total??0)||0),0);
-const stockBajo  = inv => inv.filter(i=>parseInt(i.stock_resultante??i.stock_disponible??i.cantidad??99)<=parseInt(i.stock_minimo??5));
+const sumar      = items => items.reduce((s,v)=>s+(Number.parseFloat(v.total??0)||0),0);
+const stockBajo  = inv => inv.filter(i=>Number.parseInt(i.stock_resultante??i.stock_disponible??i.cantidad??99)<=Number.parseInt(i.stock_minimo??5));
 const delMes     = vs => { const n=new Date(); return vs.filter(v=>{ try{ const f=new Date(v.fecha??v.createdAt); return f.getMonth()===n.getMonth()&&f.getFullYear()===n.getFullYear(); }catch{return false;}}); };
-const ventasDia  = vs => { const now=new Date(),map={}; for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);map[`${d.getDate()}/${d.getMonth()+1}`]=0;} vs.forEach(v=>{try{const f=new Date(v.fecha??v.createdAt),k=`${f.getDate()}/${f.getMonth()+1}`;if(k in map)map[k]+=parseFloat(v.total??0)||0;}catch{}}); return map; };
+const ventasDia  = vs => { const now=new Date(),map={}; for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);map[`${d.getDate()}/${d.getMonth()+1}`]=0;} vs.forEach(v=>{try{const f=new Date(v.fecha??v.createdAt),k=`${f.getDate()}/${f.getMonth()+1}`;if(k in map)map[k]+=Number.parseFloat(v.total??0)||0;}catch{}}); return map; };
 const colorPqrs  = e=>({Pendiente:C.red,"En Proceso":C.orange,Resuelto:C.green}[e]??"rgba(255,255,255,0.35)");
 const colorPed   = e=>({pendiente:C.orange,completado:C.green,cancelado:C.red}[e]??C.accent);
 
@@ -75,6 +76,17 @@ function ModuleCard({ mod }) {
   );
 }
 
+ModuleCard.propTypes = {
+  mod: PropTypes.shape({
+    icon:     PropTypes.string.isRequired,
+    title:    PropTypes.string.isRequired,
+    subtitle: PropTypes.string.isRequired,
+    color:    PropTypes.string.isRequired,
+    grad:     PropTypes.arrayOf(PropTypes.string).isRequired,
+    path:     PropTypes.string.isRequired,
+  }).isRequired,
+};
+
 function KpiCard({ label, value, icon, color }) {
   return (
     <div style={{ flex:1, minWidth:140, background:C.card, borderRadius:14, border:`1px solid ${color}33`, padding:"18px 16px", position:"relative", overflow:"hidden" }}>
@@ -89,6 +101,13 @@ function KpiCard({ label, value, icon, color }) {
   );
 }
 
+KpiCard.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  icon:  PropTypes.string.isRequired,
+  color: PropTypes.string.isRequired,
+};
+
 function SectionTitle({ icon, text, color }) {
   return (
     <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
@@ -98,11 +117,25 @@ function SectionTitle({ icon, text, color }) {
   );
 }
 
+SectionTitle.propTypes = {
+  icon:  PropTypes.string.isRequired,
+  text:  PropTypes.string.isRequired,
+  color: PropTypes.string,
+};
+
+SectionTitle.defaultProps = {
+  color: "#fff",
+};
+
 function EmptyState({ msg }) {
   return <div style={{ background:C.card, borderRadius:12, border:`1px solid ${C.border}`, padding:24, textAlign:"center", color:"rgba(255,255,255,0.35)" }}>{msg}</div>;
 }
 
-function EstadosCard({ title, data={}, colors={} }) {
+EmptyState.propTypes = {
+  msg: PropTypes.string.isRequired,
+};
+
+function EstadosCard({ title, data, colors }) {
   const entries = Object.entries(data);
   if (!entries.length) return <EmptyState msg="Sin datos" />;
   const total = Object.values(data).reduce((a,b)=>a+b,0);
@@ -128,7 +161,19 @@ function EstadosCard({ title, data={}, colors={} }) {
   );
 }
 
-function VentasChart({ data={} }) {
+EstadosCard.propTypes = {
+  title:  PropTypes.string,
+  data:   PropTypes.objectOf(PropTypes.number),
+  colors: PropTypes.objectOf(PropTypes.string),
+};
+
+EstadosCard.defaultProps = {
+  title:  "",
+  data:   {},
+  colors: {},
+};
+
+function VentasChart({ data }) {
   const entries = Object.entries(data);
   if (!entries.length) return <EmptyState msg="Sin datos de ventas" />;
   const maxVal = Math.max(...Object.values(data),1);
@@ -154,7 +199,15 @@ function VentasChart({ data={} }) {
   );
 }
 
-function StockBajoTable({ items=[] }) {
+VentasChart.propTypes = {
+  data: PropTypes.objectOf(PropTypes.number),
+};
+
+VentasChart.defaultProps = {
+  data: {},
+};
+
+function StockBajoTable({ items }) {
   if (!items.length) return null;
   return (
     <div style={{ background:C.card, borderRadius:14, border:`1px solid ${C.orange}40`, overflow:"hidden" }}>
@@ -171,6 +224,14 @@ function StockBajoTable({ items=[] }) {
     </div>
   );
 }
+
+StockBajoTable.propTypes = {
+  items: PropTypes.arrayOf(PropTypes.object),
+};
+
+StockBajoTable.defaultProps = {
+  items: [],
+};
 
 function DataTable({ headers, rows, estadoIdx, colorFn }) {
   if (!rows?.length) return <EmptyState msg="Sin registros" />;
@@ -195,6 +256,17 @@ function DataTable({ headers, rows, estadoIdx, colorFn }) {
   );
 }
 
+DataTable.propTypes = {
+  headers:   PropTypes.arrayOf(PropTypes.string).isRequired,
+  rows:      PropTypes.arrayOf(PropTypes.array),
+  estadoIdx: PropTypes.number.isRequired,
+  colorFn:   PropTypes.func.isRequired,
+};
+
+DataTable.defaultProps = {
+  rows: [],
+};
+
 function LogoutButton({ onClick }) {
   const [hov, setHov] = useState(false);
   return (
@@ -205,6 +277,10 @@ function LogoutButton({ onClick }) {
     </button>
   );
 }
+
+LogoutButton.propTypes = {
+  onClick: PropTypes.func.isRequired,
+};
 
 /* ─── Componente Principal ───────────────────────────────────────────────── */
 export default function AdminDashboard() {
